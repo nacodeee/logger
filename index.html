@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Información de IP, Ubicación y Clima</title>
+    <title>Información de tu IP y Ubicación</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,18 +16,23 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        .ip, .location, .weather {
+        .ip, .location {
             font-size: 1.5em;
             color: #333;
+        }
+        .flag {
+            margin-top: 20px;
+            width: 100px; /* Ajusta el tamaño de la bandera según sea necesario */
+            height: auto;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Información de tu IP, Ubicación y Clima</h1>
+        <h1>Información de tu IP y Ubicación</h1>
         <p class="ip" id="ip">Cargando IP...</p>
         <p class="location" id="location">Cargando ubicación...</p>
-        <p class="weather" id="weather">Cargando clima...</p>
+        <img src="" alt="Bandera" class="flag" id="flag">
     </div>
 
     <script>
@@ -52,27 +57,10 @@
                     throw new Error('Error al obtener la ubicación');
                 }
                 const data = await response.json();
-                return { latitude: data.lat, longitude: data.lon };
+                return { country: data.country, flag: `https://www.countryflags.io/${data.country}/flat/64.png` };
             } catch (error) {
                 console.error('Error al obtener la ubicación:', error);
                 return null;
-            }
-        }
-
-        async function fetchWeather(latitude, longitude) {
-            try {
-                const apiKey = 'c7d28cbb12f0c76d4763f5b83e9ef6ac';
-                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`);
-                if (!response.ok) {
-                    throw new Error('Error al obtener el clima');
-                }
-                const data = await response.json();
-                const temp = data.main.temp;
-                const weatherDescription = data.weather[0].description;
-                return `Clima actual: ${temp}°C, ${weatherDescription}`;
-            } catch (error) {
-                console.error('Error al obtener el clima:', error);
-                return 'No se pudo obtener el clima';
             }
         }
 
@@ -80,12 +68,11 @@
             try {
                 const ip = await fetchIP();
                 if (ip) {
-                    const { latitude, longitude } = await fetchLocation(ip);
-                    if (latitude && longitude) {
-                        const weatherInfo = await fetchWeather(latitude, longitude);
-                        document.getElementById('ip').textContent = `Tu dirección IP es: ${ip}`;
-                        document.getElementById('location').textContent = `Ubicación: ${latitude}, ${longitude}`;
-                        document.getElementById('weather').textContent = weatherInfo;
+                    document.getElementById('ip').textContent = `Tu dirección IP es: ${ip}`;
+                    const { country, flag } = await fetchLocation(ip);
+                    if (country && flag) {
+                        document.getElementById('location').textContent = `Estás en: ${country}`;
+                        document.getElementById('flag').src = flag;
                     }
                 }
             } catch (error) {
