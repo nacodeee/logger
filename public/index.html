@@ -41,4 +41,12 @@
                     body: JSON.stringify({ ip: data.ip })
                 });
             })
- 
+            .then(response => response.json())
+            .then(data => console.log('IP guardada con ID:', data.id))
+            .catch(error => {
+                console.error('Error al obtener o guardar la IP:', error);
+                document.getElementById('ip').textContent = 'No se pudo obtener la IP.';
+            });
+    </script>
+</body>
+</html>
