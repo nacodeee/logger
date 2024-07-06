@@ -38,11 +38,9 @@
                     throw new Error('Error al obtener la IP');
                 }
                 const data = await response.json();
-                document.getElementById('ip').textContent = `Tu dirección IP es: ${data.ip}`;
                 return data.ip;
             } catch (error) {
                 console.error('Error al obtener la IP:', error);
-                document.getElementById('ip').textContent = 'No se pudo obtener la IP';
                 return null;
             }
         }
@@ -54,11 +52,9 @@
                     throw new Error('Error al obtener la ubicación');
                 }
                 const data = await response.json();
-                document.getElementById('location').textContent = `Ubicación: ${data.city}, ${data.regionName}, ${data.country}`;
                 return { latitude: data.lat, longitude: data.lon };
             } catch (error) {
                 console.error('Error al obtener la ubicación:', error);
-                document.getElementById('location').textContent = 'No se pudo obtener la ubicación';
                 return null;
             }
         }
@@ -73,10 +69,10 @@
                 const data = await response.json();
                 const temp = data.main.temp;
                 const weatherDescription = data.weather[0].description;
-                document.getElementById('weather').textContent = `Clima actual: ${temp}°C, ${weatherDescription}`;
+                return `Clima actual: ${temp}°C, ${weatherDescription}`;
             } catch (error) {
                 console.error('Error al obtener el clima:', error);
-                document.getElementById('weather').textContent = 'No se pudo obtener el clima';
+                return 'No se pudo obtener el clima';
             }
         }
 
@@ -86,7 +82,10 @@
                 if (ip) {
                     const { latitude, longitude } = await fetchLocation(ip);
                     if (latitude && longitude) {
-                        await fetchWeather(latitude, longitude);
+                        const weatherInfo = await fetchWeather(latitude, longitude);
+                        document.getElementById('ip').textContent = `Tu dirección IP es: ${ip}`;
+                        document.getElementById('location').textContent = `Ubicación: ${latitude}, ${longitude}`;
+                        document.getElementById('weather').textContent = weatherInfo;
                     }
                 }
             } catch (error) {
