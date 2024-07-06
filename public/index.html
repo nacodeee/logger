@@ -16,7 +16,7 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        .ip, .location, .weather {
+        .ip, .location, .weather, .time {
             font-size: 1.5em;
             color: #333;
         }
@@ -32,34 +32,68 @@
     </div>
 
     <script>
-        fetch('https://api.ipify.org?format=json')
-            .then(response => response.json())
-            .then(data => {
+        async function fetchIP() {
+            try {
+                const response = await fetch('/api/get-ip');
+                if (!response.ok) {
+                    throw new Error('Error al obtener la IP');
+                }
+                const data = await response.json();
                 document.getElementById('ip').textContent = `Tu dirección IP es: ${data.ip}`;
-                return fetch(`https://ipapi.co/${data.ip}/json/`);
-            })
-            .then(response => response.json())
-            .then(data => {
+                return data.ip;
+            } catch (error) {
+                console.error('Error al obtener la IP:', error);
+                document.getElementById('ip').textContent = 'No se pudo obtener la IP';
+                return null;
+            }
+        }
+
+        async function fetchLocation(ip) {
+            try {
+                const response = await fetch(`/api/get-location?ip=${ip}`);
+                if (!response.ok) {
+                    throw new Error('Error al obtener la ubicación');
+                }
+                const data = await response.json();
                 document.getElementById('location').textContent = `Ubicación: ${data.city}, ${data.region}, ${data.country_name}`;
-                const { latitude, longitude, city, country_name } = data;
-                return fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=c7d28cbb12f0c76d4763f5b83e9ef6ac`);
-            })
-            .then(response => response.json())
-            .then(data => {
+                return { latitude: data.latitude, longitude: data.longitude };
+            } catch (error) {
+                console.error('Error al obtener la ubicación:', error);
+                document.getElementById('location').textContent = 'No se pudo obtener la ubicación';
+                return null;
+            }
+        }
+
+        async function fetchWeather(latitude, longitude) {
+            try {
+                const response = await fetch(`/api/get-weather?latitude=${latitude}&longitude=${longitude}`);
+                if (!response.ok) {
+                    throw new Error('Error al obtener el clima');
+                }
+                const data = await response.json();
                 const temp = data.main.temp;
-                const timezone = data.timezone;
                 const weatherDescription = data.weather[0].description;
-                const date = new Date((data.dt + timezone) * 1000);
+                const date = new Date((data.dt + data.timezone) * 1000);
                 document.getElementById('weather').textContent = `Clima actual: ${temp}°C, ${weatherDescription}`;
                 document.getElementById('time').textContent = `Hora local: ${date.toLocaleTimeString()}`;
-            })
-            .catch(error => {
-                console.error('Error al obtener información:', error);
-                document.getElementById('ip').textContent = 'No se pudo obtener la IP.';
-                document.getElementById('location').textContent = 'No se pudo obtener la ubicación.';
-                document.getElementById('weather').textContent = 'No se pudo obtener el clima.';
-                document.getElementById('time').textContent = 'No se pudo obtener el horario.';
-            });
+            } catch (error) {
+                console.error('Error al obtener el clima:', error);
+                document.getElementById('weather').textContent = 'No se pudo obtener el clima';
+                document.getElementById('time').textContent = 'No se pudo obtener el horario';
+            }
+        }
+
+        async function fetchData() {
+            const ip = await fetchIP();
+            if (ip) {
+                const { latitude, longitude } = await fetchLocation(ip);
+                if (latitude && longitude) {
+                    await fetchWeather(latitude, longitude);
+                }
+            }
+        }
+
+        fetchData();
     </script>
 </body>
 </html>

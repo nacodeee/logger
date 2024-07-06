@@ -1,12 +1,14 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "public/*",
-      "use": "@vercel/static"
-    }
+    { "src": "api/get-ip.js", "use": "@vercel/node" },
+    { "src": "api/get-location.js", "use": "@vercel/node" },
+    { "src": "api/get-weather.js", "use": "@vercel/node" }
   ],
   "routes": [
+    { "src": "/api/get-ip", "dest": "/api/get-ip.js" },
+    { "src": "/api/get-location", "dest": "/api/get-location.js" },
+    { "src": "/api/get-weather", "dest": "/api/get-weather.js" },
     { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
