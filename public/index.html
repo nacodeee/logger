@@ -42,7 +42,7 @@
             .then(data => {
                 document.getElementById('location').textContent = `Ubicación: ${data.city}, ${data.region}, ${data.country_name}`;
                 const { latitude, longitude, city, country_name } = data;
-                return fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=TU_API_KEY_DE_OPENWEATHERMAP`);
+                return fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=c7d28cbb12f0c76d4763f5b83e9ef6ac`);
             })
             .then(response => response.json())
             .then(data => {
