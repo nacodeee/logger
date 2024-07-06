@@ -16,23 +16,18 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        .ip, .location {
+        .ip, .location, .time {
             font-size: 1.5em;
             color: #333;
-        }
-        .flag {
-            margin-top: 20px;
-            width: 100px; /* Ajusta el tamaño de la bandera según sea necesario */
-            height: auto;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Información de tu IP y Ubicación</h1>
+        <h1>Información de tu IP, Ubicación y Hora Actual</h1>
         <p class="ip" id="ip">Cargando IP...</p>
         <p class="location" id="location">Cargando ubicación...</p>
-        <img src="" alt="Bandera" class="flag" id="flag">
+        <p class="time" id="time">Cargando hora...</p>
     </div>
 
     <script>
@@ -57,11 +52,17 @@
                     throw new Error('Error al obtener la ubicación');
                 }
                 const data = await response.json();
-                return { country: data.country, flag: `https://www.countryflags.io/${data.country}/flat/64.png` };
+                return { country: data.country };
             } catch (error) {
                 console.error('Error al obtener la ubicación:', error);
                 return null;
             }
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-AR');
+            return timeString;
         }
 
         async function fetchData() {
@@ -69,11 +70,12 @@
                 const ip = await fetchIP();
                 if (ip) {
                     document.getElementById('ip').textContent = `Tu dirección IP es: ${ip}`;
-                    const { country, flag } = await fetchLocation(ip);
-                    if (country && flag) {
+                    const { country } = await fetchLocation(ip);
+                    if (country) {
                         document.getElementById('location').textContent = `Estás en: ${country}`;
-                        document.getElementById('flag').src = flag;
                     }
+                    const currentTime = getCurrentTime();
+                    document.getElementById('time').textContent = `Hora actual: ${currentTime}`;
                 }
             } catch (error) {
                 console.error('Error al obtener la información:', error);
