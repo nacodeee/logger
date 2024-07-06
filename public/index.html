@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tu IP</title>
+    <title>Tu IP y Ubicación</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,7 +16,7 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        .ip {
+        .ip, .location, .weather {
             font-size: 1.5em;
             color: #333;
         }
@@ -24,28 +24,41 @@
 </head>
 <body>
     <div class="container">
-        <h1>Tu dirección IP es:</h1>
-        <p class="ip" id="ip">Cargando...</p>
+        <h1>Información de tu IP</h1>
+        <p class="ip" id="ip">Cargando IP...</p>
+        <p class="location" id="location">Cargando ubicación...</p>
+        <p class="weather" id="weather">Cargando clima...</p>
+        <p class="time" id="time">Cargando horario...</p>
     </div>
 
     <script>
         fetch('https://api.ipify.org?format=json')
             .then(response => response.json())
             .then(data => {
-                document.getElementById('ip').textContent = data.ip;
-                return fetch('/api/save-ip', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ ip: data.ip })
-                });
+                document.getElementById('ip').textContent = `Tu dirección IP es: ${data.ip}`;
+                return fetch(`https://ipapi.co/${data.ip}/json/`);
             })
             .then(response => response.json())
-            .then(data => console.log('IP guardada con ID:', data.id))
+            .then(data => {
+                document.getElementById('location').textContent = `Ubicación: ${data.city}, ${data.region}, ${data.country_name}`;
+                const { latitude, longitude, city, country_name } = data;
+                return fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=TU_API_KEY_DE_OPENWEATHERMAP`);
+            })
+            .then(response => response.json())
+            .then(data => {
+                const temp = data.main.temp;
+                const timezone = data.timezone;
+                const weatherDescription = data.weather[0].description;
+                const date = new Date((data.dt + timezone) * 1000);
+                document.getElementById('weather').textContent = `Clima actual: ${temp}°C, ${weatherDescription}`;
+                document.getElementById('time').textContent = `Hora local: ${date.toLocaleTimeString()}`;
+            })
             .catch(error => {
-                console.error('Error al obtener o guardar la IP:', error);
+                console.error('Error al obtener información:', error);
                 document.getElementById('ip').textContent = 'No se pudo obtener la IP.';
+                document.getElementById('location').textContent = 'No se pudo obtener la ubicación.';
+                document.getElementById('weather').textContent = 'No se pudo obtener el clima.';
+                document.getElementById('time').textContent = 'No se pudo obtener el horario.';
             });
     </script>
 </body>
